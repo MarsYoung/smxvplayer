@@ -19,7 +19,8 @@ async function loadFFmpeg() {
 
     loadPromise = (async () => {
         const [{ FFmpeg }, { toBlobURL }] = await Promise.all([
-            import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js'),
+            // 从本仓库托管的 js/ffmpeg/index.js 加载，避免跨域 Worker 限制
+            import('./ffmpeg/index.js'),
             import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js')
         ]);
 
