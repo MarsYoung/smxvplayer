@@ -27,10 +27,9 @@ async function loadFFmpeg() {
         const ffmpeg = new FFmpeg();
         ffmpeg.on('log', ({ message }) => console.log('[ffmpeg]', message));
 
-        const [coreURL, wasmURL] = await Promise.all([
-            toBlobURL(`${BASE_URL}/ffmpeg-core.js`, 'text/javascript'),
-            toBlobURL(`${BASE_URL}/ffmpeg-core.wasm`, 'application/wasm')
-        ]);
+        // Worker 内用 import(coreURL) 需要 ESM 且同源才有 default；wasm 继续用 blob 从 CDN 拉
+        const coreURL = new URL('./ffmpeg/core/ffmpeg-core.js', import.meta.url).href;
+        const wasmURL = await toBlobURL(`${BASE_URL}/ffmpeg-core.wasm`, 'application/wasm');
 
         await ffmpeg.load({ coreURL, wasmURL });
         ffmpegInstance = ffmpeg;
