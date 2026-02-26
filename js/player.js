@@ -151,9 +151,9 @@ class SMXVPlayer {
     }
 
     /**
-     * Convert local SMXV to MP4 and trigger download
+     * 解密本地 SMXV 并直接下载为 FLV
      */
-    async downloadLocalAsMP4(file) {
+    async downloadLocalAsFLV(file) {
         if (!file) {
             throw new Error('未选择文件');
         }
@@ -174,18 +174,6 @@ class SMXVPlayer {
             throw new Error('JSON 中缺少 mars_key');
         }
 
-        this.showLoading('正在准备转换模块...');
-        if (window.converterReady) {
-            const ok = await window.converterReady;
-            if (!ok || typeof window.convertFlvToMp4 !== 'function') {
-                this.hideLoading();
-                throw new Error('MP4 转换模块加载失败，请通过 HTTP(S) 访问本页面并刷新重试');
-            }
-        } else if (typeof window.convertFlvToMp4 !== 'function') {
-            this.hideLoading();
-            throw new Error('MP4 转换模块未加载，请通过 HTTP(S) 访问本页面并刷新重试');
-        }
-
         this.showLoading('正在读取并解码 SMXV...');
 
         try {
@@ -193,13 +181,11 @@ class SMXVPlayer {
             const arrayBuffer = await file.arrayBuffer();
             const flvData = await this.decoder.decode(arrayBuffer);
 
-            this.showLoading('正在转换为 MP4（首次需加载约 30MB 转换引擎）...');
-            const mp4Blob = await window.convertFlvToMp4(flvData);
-
+            const flvBlob = new Blob([flvData], { type: 'video/x-flv' });
             const baseName = file.name.replace(/\.smxv$/i, '');
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(mp4Blob);
-            a.download = baseName + '.mp4';
+            a.href = URL.createObjectURL(flvBlob);
+            a.download = baseName + '.flv';
             a.click();
             URL.revokeObjectURL(a.href);
 
@@ -393,19 +379,19 @@ class SMXVPlayer {
             }
             btnGroup.appendChild(playBtn);
 
-            const downloadMp4Btn = document.createElement('button');
-            downloadMp4Btn.className = 'download-mp4-btn';
-            downloadMp4Btn.textContent = '转 MP4 下载';
-            downloadMp4Btn.disabled = !hasMatch;
+            const downloadFlvBtn = document.createElement('button');
+            downloadFlvBtn.className = 'download-flv-btn';
+            downloadFlvBtn.textContent = '下载 FLV';
+            downloadFlvBtn.disabled = !hasMatch;
             if (hasMatch) {
-                downloadMp4Btn.addEventListener('click', () => {
-                    this.downloadLocalAsMP4(file).catch(err => {
-                        console.error('Download MP4 error:', err);
-                        this.showError('转 MP4 失败: ' + err.message);
+                downloadFlvBtn.addEventListener('click', () => {
+                    this.downloadLocalAsFLV(file).catch(err => {
+                        console.error('Download FLV error:', err);
+                        this.showError('下载 FLV 失败: ' + err.message);
                     });
                 });
             }
-            btnGroup.appendChild(downloadMp4Btn);
+            btnGroup.appendChild(downloadFlvBtn);
 
             item.appendChild(videoInfo);
             item.appendChild(btnGroup);

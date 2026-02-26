@@ -178,12 +178,12 @@ header h1 {
 }
 
 .play-btn:hover,
-.download-mp4-btn:hover {
+.download-flv-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
 }
 
-.download-mp4-btn {
+.download-flv-btn {
     padding: 8px 16px;
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
@@ -194,7 +194,7 @@ header h1 {
     transition: all 0.3s;
 }
 
-.download-mp4-btn:disabled {
+.download-flv-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }

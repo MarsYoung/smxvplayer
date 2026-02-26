@@ -9,7 +9,7 @@
 <body>
     <!-- 用 file:// 打开时无法使用 ES 模块和 fetch，必须用本地服务器 -->
     <div id="file-protocol-warning" class="file-protocol-warning" style="display: none;">
-        <strong>请勿直接双击打开本页。</strong> 请用本地 HTTP 服务器访问，否则加载 JSON、转 MP4 等功能会报错。<br>
+        <strong>请勿直接双击打开本页。</strong> 请用本地 HTTP 服务器访问，否则加载 JSON、下载 FLV 等功能会报错。<br>
         在终端进入 <code>smxv-player</code> 所在目录后执行：<br>
         <code>npx serve .</code> 或 <code>python3 -m http.server 8000</code><br>
         然后在浏览器打开 <code>http://localhost:3000</code> 或 <code>http://localhost:8000</code>。
@@ -57,17 +57,6 @@
     
     <!-- SMXV Decoder -->
     <script src="js/smxv-decoder.js"></script>
-    <!-- 提前加载 MP4 转换模块并挂到 window，供播放器在点击时使用 -->
-    <script type="module">
-        window.converterReady = import('./js/smxv-to-mp4.js').then(function(m) {
-            window.convertFlvToMp4 = m.convertFlvToMp4;
-            window.loadFFmpegForMp4 = m.loadFFmpegForMp4;
-            return true;
-        }).catch(function(err) {
-            console.error('MP4 转换模块加载失败:', err);
-            return false;
-        });
-    </script>
     <!-- Player -->
     <script src="js/player.js"></script>
     

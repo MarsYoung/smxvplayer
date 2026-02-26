@@ -191,7 +191,7 @@ npx http-server -p 8000
 
 ## 部署到 GitHub（给用户用）
 
-把本目录部署成网页后，用户用浏览器打开链接即可使用（加载 JSON + 选本地 SMXV → 播放/转 MP4）。
+把本目录部署成网页后，用户用浏览器打开链接即可使用（加载 JSON + 选本地 SMXV → 播放/下载 FLV）。
 
 **步骤概要**：新建 GitHub 仓库 → 只提交本目录下的 `index.html`、`css/`、`js/`、`README.md` 等 → 仓库 **Settings → Pages** → Source 选 **Deploy from a branch**，Branch 选 `main`，Folder 选 **/ (root)** → 保存后访问 `https://你的用户名.github.io/仓库名/`。
 
