@@ -51,7 +51,18 @@ export async function convertFlvToMp4(flvArrayBuffer) {
     const outputName = 'output.mp4';
 
     await ffmpeg.writeFile(inputName, new Uint8Array(flvArrayBuffer));
-    await ffmpeg.exec(['-i', inputName, '-c', 'copy', outputName]);
+    // 重新封装 + 转码为常见的 H.264/AAC MP4，保证兼容主流播放器
+    await ffmpeg.exec([
+        '-fflags', '+genpts',
+        '-i', inputName,
+        '-c:v', 'libx264',
+        '-preset', 'fast',
+        '-crf', '23',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-movflags', 'faststart',
+        outputName
+    ]);
 
     const data = await ffmpeg.readFile(outputName);
     const blob = new Blob([data], { type: 'video/mp4' });
