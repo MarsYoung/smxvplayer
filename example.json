@@ -1,0 +1,38 @@
+[
+    {
+        "pid": 1402001,
+        "lid": 1472382,
+        "vid": "104732",
+        "fid": 2456355,
+        "id": 2456355,
+        "live_id": 104732,
+        "file_id": null,
+        "duration": 875,
+        "file_name": null,
+        "cover_url": "http://pic.mixiong.tv/firstframe/4ed538dbeeb893cd.jpg",
+        "status": null,
+        "order_idx": 1,
+        "type": 5,
+        "obj_id": 104732,
+        "download_url": null,
+        "download_size": 98312247,
+        "download_md5": "459882a56d19b4fbc6b14001d8cc28da",
+        "c_type": 1,
+        "sdownload_url": "http://vod.mixiong.tv/smxv/5a64cacfc2011539.smxv",
+        "sdownload_size": 98312247,
+        "sdownload_md5": "45032a62b4f124b9aec4d07b2cf65b9e",
+        "data_length": 128,
+        "enc_key": "$*!HC)f%KD!@IOKr",
+        "mars_key": "1=5=0&2=1=14358",
+        "video_id": 489228,
+        "url": "http://vod.mixiong.tv/merged/1_2_104732/1735104267040.mp4",
+        "definition": 0,
+        "vbitrate": 0,
+        "vheight": 720,
+        "vwidth": 1280,
+        "media_format": 1,
+        "size": 253468381,
+        "u_time": 1735104943404
+    }
+]
+

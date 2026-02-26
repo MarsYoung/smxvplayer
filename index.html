@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMXV 视频播放器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 用 file:// 打开时无法使用 ES 模块和 fetch，必须用本地服务器 -->
+    <div id="file-protocol-warning" class="file-protocol-warning" style="display: none;">
+        <strong>请勿直接双击打开本页。</strong> 请用本地 HTTP 服务器访问，否则加载 JSON、转 MP4 等功能会报错。<br>
+        在终端进入 <code>smxv-player</code> 所在目录后执行：<br>
+        <code>npx serve .</code> 或 <code>python3 -m http.server 8000</code><br>
+        然后在浏览器打开 <code>http://localhost:3000</code> 或 <code>http://localhost:8000</code>。
+    </div>
+    <script>
+        (function() {
+            if (window.location.protocol === 'file:') {
+                var el = document.getElementById('file-protocol-warning');
+                if (el) el.style.display = 'block';
+            }
+        })();
+    </script>
+    <div class="container">
+        <header>
+            <h1>SMXV 视频播放器</h1>
+            <div class="controls">
+                <input type="file" id="json-file" accept=".json" style="display: none;">
+                <button onclick="document.getElementById('json-file').click()">加载 JSON 数据（用于匹配）</button>
+                <input type="file" id="smxv-files" accept=".smxv" multiple style="display: none;">
+                <button onclick="selectLocalFiles()">选择本地 SMXV 文件</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="video-section">
+                <div id="player-container"></div>
+                <div id="loading" class="loading" style="display: none;"></div>
+                <div id="error" class="error" style="display: none;"></div>
+            </div>
+
+            <div class="sidebar">
+                <h2>本地文件列表</h2>
+                <div id="video-list">
+                    <p style="color: #666; text-align: center; padding: 20px;">请先加载 JSON 数据，然后选择本地 SMXV 文件</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- flv.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
+    
+    <!-- CryptoJS library for AES decryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <!-- SMXV Decoder -->
+    <script src="js/smxv-decoder.js"></script>
+    <!-- 提前加载 MP4 转换模块并挂到 window，供播放器在点击时使用 -->
+    <script type="module">
+        window.converterReady = import('./js/smxv-to-mp4.js').then(function(m) {
+            window.convertFlvToMp4 = m.convertFlvToMp4;
+            window.loadFFmpegForMp4 = m.loadFFmpegForMp4;
+            return true;
+        }).catch(function(err) {
+            console.error('MP4 转换模块加载失败:', err);
+            return false;
+        });
+    </script>
+    <!-- Player -->
+    <script src="js/player.js"></script>
+    
+    <!-- Main script -->
+    <script>
+        let player;
+
+        // Initialize player
+        window.addEventListener('DOMContentLoaded', () => {
+            player = new SMXVPlayer('player-container');
+
+            // Load JSON file input handler
+            document.getElementById('json-file').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    // Handle {"data": [...]} format
+                    let videoData = data;
+                    if (data && typeof data === 'object' && 'data' in data) {
+                        videoData = data.data;
+                    }
+                    
+                    player.videoData = Array.isArray(videoData) ? videoData : [videoData];
+                    player.renderVideoList();
+                    alert(`成功加载 ${player.videoData.length} 个视频`);
+                } catch (error) {
+                    alert('加载 JSON 文件失败: ' + error.message);
+                    console.error(error);
+                }
+            });
+
+            // Local SMXV files input handler
+            document.getElementById('smxv-files').addEventListener('change', async (e) => {
+                const files = Array.from(e.target.files);
+                if (files.length === 0) return;
+
+                if (player.videoData.length === 0) {
+                    alert('请先加载 JSON 数据用于匹配解密参数');
+                    return;
+                }
+
+                // Filter only .smxv files
+                const smxvFiles = files.filter(f => f.name.toLowerCase().endsWith('.smxv'));
+                if (smxvFiles.length === 0) {
+                    alert('未找到 SMXV 文件');
+                    return;
+                }
+
+                player.renderLocalFileList(smxvFiles);
+                player.localFiles = smxvFiles;
+            });
+
+            // Try to load default JSON if exists
+            loadDefaultJSON();
+        });
+
+        // Select local files
+        function selectLocalFiles() {
+            if (player.videoData.length === 0) {
+                alert('请先加载 JSON 数据用于匹配解密参数');
+                return;
+            }
+            document.getElementById('smxv-files').click();
+        }
+
+        // Load default JSON
+        async function loadDefaultJSON() {
+            // Try common JSON file names
+            const jsonFiles = ['example_video_data.json', 'newprogram.json', 'videos.json'];
+            
+            for (const jsonFile of jsonFiles) {
+                try {
+                    await player.loadVideoData(jsonFile);
+                    console.log(`Loaded default JSON: ${jsonFile}`);
+                    return;
+                } catch (error) {
+                    // Continue to next file
+                }
+            }
+        }
+
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (player) {
+                player.destroy();
+            }
+        });
+    </script>
+</body>
+</html>
+
